@@ -147,6 +147,7 @@ let isClosed = false;
 const LOGO_URL = "bcd.png"; 
 const PAN_NO = "127228299"; 
 const COMPANY_NAME = "BCD SUPPLIERS";
+const WEBSITE_URL = "www.bcdsuppliers.com.np";
 
 function updateClock() {
     const now = new Date();
@@ -235,7 +236,6 @@ function renderHistory() {
     let hTableBody = document.getElementById("historyTableBody");
     hTableBody.innerHTML = "";
     
-    // Filter history to show only bills from the selected day
     let dailyHistory = allHistory.filter(bill => bill.date === key);
     
     if (dailyHistory.length === 0) {
@@ -295,7 +295,6 @@ function printSelectedItems() {
         grandTotal: billTotal
     };
 
-    // Save to global history
     let history = JSON.parse(localStorage.getItem("all_bill_history")) || [];
     history.push(billRecord);
     localStorage.setItem("all_bill_history", JSON.stringify(history));
@@ -328,8 +327,9 @@ function reprintBill(bill) {
                 table { width: 100%; border-collapse: collapse; margin-top: 5px; }
                 th, td { border: 1px solid black; padding: 6px; text-align: left; font-size: 11px; }
                 .total-section { margin-top: 10px; text-align: right; font-size: 14px; font-weight: bold; border-top: 1px solid black; padding-top: 5px; }
+                .website-note { margin-top: 20px; font-size: 10px; color: #555; font-style: italic; }
                 .spacer { flex-grow: 1; }
-                .sig-section { display: flex; justify-content: space-between; margin-top: 40px; }
+                .sig-section { display: flex; justify-content: space-between; margin-top: 30px; }
                 .sig-box { width: 140px; border-top: 1px solid black; padding-top: 3px; font-size: 10px; }
             </style>
         </head>
@@ -350,8 +350,15 @@ function reprintBill(bill) {
                     <tbody>${tableRows}</tbody>
                 </table>
                 <div class="total-section">Grand Total: Rs ${bill.grandTotal.toFixed(2)}</div>
+                
                 <div class="spacer"></div>
-                <div class="sig-section"><div class="sig-box">Receiver</div><div class="sig-box">Authorized Signature</div></div>
+                
+                <div class="website-note">Visit us at: ${WEBSITE_URL}</div>
+                
+                <div class="sig-section">
+                    <div class="sig-box">Receiver's Signature</div>
+                    <div class="sig-box">Authorized Signature</div>
+                </div>
             </div>
             <script>window.onload = function() { setTimeout(function(){ window.print(); window.close(); }, 700); }<\/script>
         </body>
@@ -377,7 +384,7 @@ function prepareAndPrintFull() {
 }
 
 function resetBillCounter() {
-    if(confirm("Reset bill number to 1? (Warning: Duplicate Bill IDs may occur in records)")) {
+    if(confirm("Reset bill number to 1?")) {
         localStorage.setItem("lastBillNumber", 0);
         alert("Counter reset!");
     }
