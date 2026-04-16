@@ -36,22 +36,22 @@
         th { background:#444; color:white; }
         
         .danger { background:red; color:white; }
+        .view-btn { background: #17a2b8; color: white; }
         .print-full-btn { background: #007bff; color: white; }
         .select-print-btn { background: #28a745; color: white; }
+        .history-btn { background: #6f42c1; color: white; }
 
         #computer-gen-note, #print-timestamp { display: none; }
+        #billHistorySection { display: none; margin-top: 30px; border-top: 3px solid #6f42c1; padding-top: 20px; background: #f9f9f9; }
 
-        /* Print Settings for Full Day Record (A4/Default) */
+        /* Print Settings */
         @media print {
-            .no-print, .nav, button, input, h3:not(#total), #status, .checkbox-cell, hr, #liveClock { display: none !important; }
+            .no-print, .nav, button, input, h3:not(#total), #status, .checkbox-cell, hr, #liveClock, #billHistorySection { display: none !important; }
             #computer-gen-note { display: block !important; margin-top: 30px; font-style: italic; font-size: 12px; }
             #print-timestamp { display: block !important; text-align: left; margin: 10px 0 10px 2.5%; font-size: 11px; }
             body { background: white; padding: 0; }
             .header-container { background: none; color: black; border-bottom: 2px solid black; }
-            .header-contact-info, .pan-display { color: black; }
-            .header-contact-info i { color: black; }
             th { background: #eee !important; color: black !important; }
-            #total, #grand { text-align: right; margin-right: 5%; }
         }
     </style>
 </head>
@@ -94,7 +94,8 @@
     <hr style="width: 50%; margin: 20px auto;">
     <button class="print-full-btn" onclick="prepareAndPrintFull()">🖨 Print Full Day Record</button>
     <button class="select-print-btn" onclick="printSelectedItems()">✅ Print Selected Items Only </button>
-    <button onclick="resetBillCounter()" style="background:#888; color:white; font-size:10px;">Reset Bill</button>
+    <button class="history-btn" onclick="toggleHistory()">📋 View Bill Records</button>
+    <button onclick="resetBillCounter()" style="background:#888; color:white; font-size:10px;">Reset Bill #</button>
 </div>
 
 <table id="table">
@@ -114,6 +115,22 @@
 
 <h3 id="total"></h3>
 <h2 id="grand"></h2>
+
+<div id="billHistorySection" class="no-print">
+    <h2 style="color:#6f42c1;">Bill Records for <span id="historyDateLabel"></span></h2>
+    <table id="historyTable">
+        <thead>
+            <tr>
+                <th>Bill No</th>
+                <th>Time</th>
+                <th>Customer Name & Address</th>
+                <th>Total Amount</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="historyTableBody"></tbody>
+    </table>
+</div>
 
 <div id="computer-gen-note">
     <hr style="border: 0.5px solid #ccc; width: 80%;">
@@ -152,12 +169,16 @@ function filterByDate(val) {
 function loadData(){
     let key = formatDate(currentDate);
     document.getElementById("currentDate").innerText = "Date: " + key;
+    document.getElementById("historyDateLabel").innerText = key;
     document.getElementById("dateFilter").value = key;
+    
     let data = JSON.parse(localStorage.getItem(key)) || [];
     let status = localStorage.getItem(key+"_status") || "open";
     isClosed = (status === "closed");
     document.getElementById("status").innerText = status.toUpperCase();
+    
     renderTable(data);
+    renderHistory();
 }
 
 function saveData(data){
@@ -203,6 +224,142 @@ function renderTable(data){
     document.getElementById("grand").innerText = "Grand Total: Rs " + sum.toFixed(2);
 }
 
+function toggleHistory() {
+    let section = document.getElementById("billHistorySection");
+    section.style.display = (section.style.display === "none" || section.style.display === "") ? "block" : "none";
+}
+
+function renderHistory() {
+    let key = formatDate(currentDate);
+    let allHistory = JSON.parse(localStorage.getItem("all_bill_history")) || [];
+    let hTableBody = document.getElementById("historyTableBody");
+    hTableBody.innerHTML = "";
+    
+    // Filter history to show only bills from the selected day
+    let dailyHistory = allHistory.filter(bill => bill.date === key);
+    
+    if (dailyHistory.length === 0) {
+        hTableBody.innerHTML = "<tr><td colspan='5' style='padding:20px; color:#888;'>No individual bills found for this date.</td></tr>";
+        return;
+    }
+
+    dailyHistory.slice().reverse().forEach((bill) => {
+        let row = hTableBody.insertRow();
+        row.insertCell(0).innerText = bill.billNo;
+        row.insertCell(1).innerText = bill.time;
+        row.insertCell(2).innerText = bill.customer;
+        row.insertCell(3).innerText = "Rs " + bill.grandTotal.toFixed(2);
+        let actions = row.insertCell(4);
+        
+        let deleteBtn = isClosed ? "" : `<button class="danger" style="padding:4px 8px; font-size:10px" onclick='deleteBill(${bill.billNo})'>Delete</button>`;
+        
+        actions.innerHTML = `
+            <button class="view-btn" onclick='reprintBill(${JSON.stringify(bill)})'>👁 View/Print</button> 
+            ${deleteBtn}
+        `;
+    });
+}
+
+function deleteBill(bNo) {
+    if(confirm("Delete record for Bill #" + bNo + "?")) {
+        let history = JSON.parse(localStorage.getItem("all_bill_history")) || [];
+        history = history.filter(b => b.billNo !== bNo);
+        localStorage.setItem("all_bill_history", JSON.stringify(history));
+        renderHistory();
+    }
+}
+
+function printSelectedItems() {
+    let key = formatDate(currentDate);
+    let data = JSON.parse(localStorage.getItem(key)) || [];
+    let selectedItems = [];
+    let checkboxes = document.querySelectorAll('.item-checkbox:checked');
+    
+    if (checkboxes.length === 0) { alert("Select items first!"); return; }
+
+    let inputInfo = prompt("Enter Customer Name & Address:", "Cash Sales");
+    let customerInfo = (inputInfo === null || inputInfo.trim() === "") ? "Cash Sales" : inputInfo;
+
+    let billNo = localStorage.getItem("lastBillNumber") || 0;
+    billNo = parseInt(billNo) + 1;
+
+    checkboxes.forEach(cb => selectedItems.push(data[cb.getAttribute('data-index')]));
+    let billTotal = selectedItems.reduce((acc, curr) => acc + curr.total, 0);
+
+    const billRecord = {
+        billNo: billNo,
+        date: key,
+        time: new Date().toLocaleTimeString(),
+        customer: customerInfo,
+        items: selectedItems,
+        grandTotal: billTotal
+    };
+
+    // Save to global history
+    let history = JSON.parse(localStorage.getItem("all_bill_history")) || [];
+    history.push(billRecord);
+    localStorage.setItem("all_bill_history", JSON.stringify(history));
+    
+    localStorage.setItem("lastBillNumber", billNo);
+    reprintBill(billRecord);
+    loadData();
+}
+
+function reprintBill(bill) {
+    let printWindow = window.open('', '_blank', 'width=600,height=800');
+    let tableRows = bill.items.map((item, index) => 
+        `<tr><td>${index + 1}</td><td>${item.item}</td><td>${item.qty}</td><td>${item.price}</td><td>${item.total}</td></tr>`
+    ).join('');
+
+    printWindow.document.write(`
+        <html>
+        <head>
+            <title>Bill No: ${bill.billNo}</title>
+            <style>
+                @page { size: A5; margin: 5mm; }
+                body { font-family: Arial; padding: 10px; text-align: center; font-size: 12px; }
+                .bill-container { border: 1px solid black; padding: 10px; min-height: 185mm; box-sizing: border-box; display: flex; flex-direction: column; }
+                .pan-row { display: flex; justify-content: space-between; font-weight: bold; font-size: 11px; }
+                .header-section { display: flex; align-items: center; justify-content: center; border-bottom: 1.5px solid black; padding-bottom: 8px; margin-bottom: 10px; }
+                .header-section img { height: 45px; margin-right: 10px; }
+                .company-info h2 { margin: 0; font-size: 18px; text-transform: uppercase; }
+                .meta-info { display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 5px; font-weight: bold; border-bottom: 1px dashed #ccc; text-align: left; }
+                .customer-row { text-align: left; font-size: 11px; font-weight: bold; margin-bottom: 8px; border-bottom: 1px solid #eee; padding-bottom: 4px; }
+                table { width: 100%; border-collapse: collapse; margin-top: 5px; }
+                th, td { border: 1px solid black; padding: 6px; text-align: left; font-size: 11px; }
+                .total-section { margin-top: 10px; text-align: right; font-size: 14px; font-weight: bold; border-top: 1px solid black; padding-top: 5px; }
+                .spacer { flex-grow: 1; }
+                .sig-section { display: flex; justify-content: space-between; margin-top: 40px; }
+                .sig-box { width: 140px; border-top: 1px solid black; padding-top: 3px; font-size: 10px; }
+            </style>
+        </head>
+        <body>
+            <div class="bill-container">
+                <div class="pan-row"><span>PAN: ${PAN_NO}</span><span>Bill No: ${bill.billNo}</span></div>
+                <div class="header-section">
+                    <img src="${LOGO_URL}" onerror="this.style.display='none'">
+                    <div class="company-info">
+                        <h2>${COMPANY_NAME}</h2>
+                        <div style="font-size:10px;">Kalimati-13, Kathmandu | 9761795579</div>
+                    </div>
+                </div>
+                <div class="meta-info"><span>Date: ${bill.date}</span><span>Time: ${bill.time}</span></div>
+                <div class="customer-row">Name & Address: ${bill.customer}</div>
+                <table>
+                    <thead><tr><th>S.N.</th><th>Item</th><th>Qty</th><th>Price</th><th>Total</th></tr></thead>
+                    <tbody>${tableRows}</tbody>
+                </table>
+                <div class="total-section">Grand Total: Rs ${bill.grandTotal.toFixed(2)}</div>
+                <div class="spacer"></div>
+                <div class="sig-section"><div class="sig-box">Receiver</div><div class="sig-box">Authorized Signature</div></div>
+            </div>
+            <script>window.onload = function() { setTimeout(function(){ window.print(); window.close(); }, 700); }<\/script>
+        </body>
+        </html>
+    `);
+    printWindow.document.close();
+}
+
 function deleteItem(index){
     if(confirm("Delete this record?")) {
         let key = formatDate(currentDate);
@@ -219,105 +376,8 @@ function prepareAndPrintFull() {
     window.print();
 }
 
-function printSelectedItems() {
-    let key = formatDate(currentDate);
-    let data = JSON.parse(localStorage.getItem(key)) || [];
-    let selectedItems = [];
-    let checkboxes = document.querySelectorAll('.item-checkbox:checked');
-    
-    if (checkboxes.length === 0) { 
-        alert("Select items first!"); 
-        return; 
-    }
-
-    // UPDATED PROMPT: Requesting both name and address
-    let inputInfo = prompt("Enter Customer Name & Address:", "Cash Sales");
-    let customerInfo = (inputInfo === null || inputInfo.trim() === "") ? "Cash Sales" : inputInfo;
-
-    let billNo = localStorage.getItem("lastBillNumber") || 0;
-    billNo = parseInt(billNo) + 1;
-
-    checkboxes.forEach(cb => selectedItems.push(data[cb.getAttribute('data-index')]));
-
-    let billTotal = selectedItems.reduce((acc, curr) => acc + curr.total, 0);
-    let printWindow = window.open('', '_blank', 'width=600,height=800');
-    
-    let tableRows = selectedItems.map((item, index) => 
-        `<tr><td>${index + 1}</td><td>${item.item}</td><td>${item.qty}</td><td>${item.price}</td><td>${item.total}</td></tr>`
-    ).join('');
-
-    printWindow.document.write(`
-        <html>
-        <head>
-            <title>Bill No: ${billNo}</title>
-            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-            <style>
-                @page { size: A5; margin: 5mm; }
-                body { font-family: Arial, sans-serif; padding: 10px; text-align: center; font-size: 12px; }
-                .bill-container { border: 1px solid black; padding: 10px; min-height: 185mm; box-sizing: border-box; display: flex; flex-direction: column; }
-                .pan-row { display: flex; justify-content: space-between; font-weight: bold; font-size: 11px; margin-bottom: 2px; }
-                .header-section { display: flex; align-items: center; justify-content: center; border-bottom: 1.5px solid black; padding-bottom: 8px; margin-bottom: 10px; }
-                .header-section img { height: 45px; margin-right: 10px; }
-                .company-info h2 { margin: 0; font-size: 18px; text-transform: uppercase; }
-                .contact-info { font-size: 10px; margin-top: 3px; color: #000; line-height: 1.2; }
-                .meta-info { display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 5px; font-weight: bold; border-bottom: 1px dashed #ccc; padding-bottom: 3px; text-align: left; }
-                /* Updated styling to allow address wrapping */
-                .customer-row { text-align: left; font-size: 11px; font-weight: bold; margin-bottom: 8px; border-bottom: 1px solid #eee; padding-bottom: 4px; line-height: 1.4; }
-                table { width: 100%; border-collapse: collapse; margin-top: 5px; }
-                th, td { border: 1px solid black; padding: 6px; text-align: left; font-size: 11px; }
-                th { background-color: #f2f2f2; }
-                .total-section { margin-top: 10px; text-align: right; font-size: 14px; font-weight: bold; border-top: 1px solid black; padding-top: 5px; }
-                .spacer { flex-grow: 1; }
-                .sig-section { display: flex; justify-content: space-between; padding: 0 10px; margin-top: 40px; margin-bottom: 10px; }
-                .sig-box { width: 140px; border-top: 1px solid black; padding-top: 3px; font-size: 10px; font-weight: bold; }
-                .footer-web { font-size: 9px; font-style: italic; color: #555; }
-            </style>
-        </head>
-        <body>
-            <div class="bill-container">
-                <div class="pan-row">
-                    <span>PAN: ${PAN_NO}</span>
-                    <span>Bill No: ${billNo}</span>
-                </div>
-                <div class="header-section">
-                    <img src="${LOGO_URL}" onerror="this.style.display='none'">
-                    <div class="company-info">
-                        <h2>${COMPANY_NAME}</h2>
-                        <div class="contact-info">
-                            <i class="fa-solid fa-location-dot"></i> Kalimati-13, Kathmandu<br>
-                            <i class="fa-solid fa-phone"></i> 9761795579 / 9702046747<br>
-                            <i class="fa-solid fa-envelope"></i> bcdsuppliers@gmail.com
-                        </div>
-                    </div>
-                </div>
-                <div class="meta-info">
-                    <span>Date: ${key}</span>
-                    <span>Time: ${new Date().toLocaleTimeString()}</span>
-                </div>
-                <div class="customer-row">Name & Address: ${customerInfo}</div>
-                <table>
-                    <thead><tr><th>S.N.</th><th>Item</th><th>Qty</th><th>Price</th><th>Total</th></tr></thead>
-                    <tbody>${tableRows}</tbody>
-                </table>
-                <div class="total-section">Grand Total: Rs ${billTotal.toFixed(2)}</div>
-                <div class="spacer"></div>
-                <div class="sig-section"><div class="sig-box">Receiver's Signature</div><div class="sig-box">Authorized Signature</div></div>
-                <div class="footer-web">www.bcdsuppliers.com.np</div>
-            </div>
-            <script>
-                window.onload = function() { 
-                    setTimeout(function(){ window.print(); window.close(); }, 700); 
-                }
-            <\/script>
-        </body>
-        </html>
-    `);
-    printWindow.document.close();
-    localStorage.setItem("lastBillNumber", billNo);
-}
-
 function resetBillCounter() {
-    if(confirm("Reset bill number to 1?")) {
+    if(confirm("Reset bill number to 1? (Warning: Duplicate Bill IDs may occur in records)")) {
         localStorage.setItem("lastBillNumber", 0);
         alert("Counter reset!");
     }
