@@ -40,6 +40,7 @@
         .print-full-btn { background: #007bff; color: white; }
         .select-print-btn { background: #28a745; color: white; }
         .history-btn { background: #6f42c1; color: white; }
+        .monthly-btn { background: #ff8c00; color: white; }
 
         #computer-gen-note, #print-timestamp { display: none; }
         #billHistorySection { display: none; margin-top: 30px; border-top: 3px solid #6f42c1; padding-top: 20px; background: #f9f9f9; }
@@ -75,11 +76,18 @@
 <div id="print-timestamp"></div>
 
 <div class="nav no-print">
-    <button onclick="prevDay()">⬅ Previous</button>
-    <input type="date" id="dateFilter" onchange="filterByDate(this.value)">
-    <button onclick="nextDay()">Next ➡</button>
-    <br>
-    <span id="currentDate" style="font-size:18px;font-weight:bold; display:block; margin-top:5px;"></span>
+    <div style="margin-bottom: 10px;">
+        <button onclick="prevDay()">⬅ Previous</button>
+        <input type="date" id="dateFilter" onchange="filterByDate(this.value)">
+        <button onclick="nextDay()">Next ➡</button>
+    </div>
+    <span id="currentDate" style="font-size:18px;font-weight:bold; display:block; margin-bottom:10px;"></span>
+    
+    <div style="border-top: 1px solid #bbb; padding-top: 10px;">
+        <label style="font-size: 12px; font-weight: bold;">Monthly Filter:</label>
+        <input type="month" id="monthFilter">
+        <button class="monthly-btn" onclick="printMonthlyReport()">📊 Print Monthly Report</button>
+    </div>
 </div>
 
 <div class="no-print">
@@ -251,6 +259,7 @@ function renderHistory() {
         row.insertCell(3).innerText = "Rs " + bill.grandTotal.toFixed(2);
         let actions = row.insertCell(4);
         
+        
         let deleteBtn = isClosed ? "" : `<button class="danger" style="padding:4px 8px; font-size:10px" onclick='deleteBill(${bill.billNo})'>Delete</button>`;
         
         actions.innerHTML = `
@@ -350,17 +359,72 @@ function reprintBill(bill) {
                     <tbody>${tableRows}</tbody>
                 </table>
                 <div class="total-section">Grand Total: Rs ${bill.grandTotal.toFixed(2)}</div>
-                
                 <div class="spacer"></div>
-                
                 <div class="website-note">Visit us at: ${WEBSITE_URL}</div>
-                
                 <div class="sig-section">
                     <div class="sig-box">Receiver's Signature</div>
                     <div class="sig-box">Authorized Signature</div>
                 </div>
             </div>
             <script>window.onload = function() { setTimeout(function(){ window.print(); window.close(); }, 700); }<\/script>
+        </body>
+        </html>
+    `);
+    printWindow.document.close();
+}
+
+function printMonthlyReport() {
+    const selectedMonth = document.getElementById('monthFilter').value;
+    if (!selectedMonth) { alert("Please select a month!"); return; }
+
+    let monthlyData = [];
+    let grandTotal = 0;
+    
+    for (let i = 0; i < localStorage.length; i++) {
+        let key = localStorage.key(i);
+        // Valid date format is YYYY-MM-DD
+        if (key.startsWith(selectedMonth) && !key.endsWith("_status") && key !== "all_bill_history" && key !== "lastBillNumber") {
+            let dayData = JSON.parse(localStorage.getItem(key)) || [];
+            let dayTotal = dayData.reduce((sum, item) => sum + item.total, 0);
+            if (dayData.length > 0) {
+                monthlyData.push({ date: key, total: dayTotal });
+                grandTotal += dayTotal;
+            }
+        }
+    }
+
+    monthlyData.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+    if (monthlyData.length === 0) { alert("No data for this month."); return; }
+
+    let printWindow = window.open('', '_blank', 'width=800,height=600');
+    let rows = monthlyData.map(d => `<tr><td>${d.date}</td><td>Rs ${d.total.toFixed(2)}</td></tr>`).join('');
+
+    printWindow.document.write(`
+        <html>
+        <head>
+            <title>Monthly Report - ${selectedMonth}</title>
+            <style>
+                body { font-family: Arial; padding: 30px; text-align: center; }
+                .rep-header { border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; }
+                table { width: 100%; border-collapse: collapse; }
+                th, td { border: 1px solid #000; padding: 10px; text-align: left; }
+                th { background: #f0f0f0; }
+                .grand { font-size: 20px; font-weight: bold; margin-top: 20px; text-align: right; }
+            </style>
+        </head>
+        <body>
+            <div class="rep-header">
+                <h1>${COMPANY_NAME}</h1>
+                <p>MONTHLY SALES REPORT: ${selectedMonth}</p>
+                <p>PAN: ${PAN_NO}</p>
+            </div>
+            <table>
+                <thead><tr><th>Date</th><th>Total Sales</th></tr></thead>
+                <tbody>${rows}</tbody>
+            </table>
+            <div class="grand">Monthly Grand Total: Rs ${grandTotal.toFixed(2)}</div>
+            <script>window.onload = function(){ window.print(); window.close(); }<\/script>
         </body>
         </html>
     `);
