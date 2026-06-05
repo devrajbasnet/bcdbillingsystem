@@ -1,490 +1,875 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>BCD Billing System</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        body { font-family: Arial; background:#f4f4f4; text-align:center; margin: 0; padding-bottom: 50px; }
-        
-        /* Main Header */
-        .header-container { 
-            background:#222; 
-            color:white; 
-            padding:15px 10px; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: center; 
-            position: relative; 
-        }
-        .header-main { display: flex; align-items: center; justify-content: center; margin-bottom: 5px; }
-        .header-main img { height: 50px; margin-right: 15px; border-radius: 4px; }
-        h1 { margin: 0; font-size: 24px; }
-        .header-contact-info { font-size: 12px; color: #ccc; display: flex; gap: 15px; margin-top: 5px; }
-        .header-contact-info i { color: #28a745; margin-right: 5px; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BCD Suppliers — Billing System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=DM+Mono:wght@300;400;500&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+/* ── DARK (default) ── */
+:root{
+  --bg:#0d0d0f; --surface:#141417; --card:#1a1a1f;
+  --border:#2a2a35; --border2:#35353f;
+  --gold:#c9a96e; --gold-dim:#8a6e3e; --gold-glow:rgba(201,169,110,.12);
+  --text:#e8e5df; --text-muted:#7a7870; --text-dim:#4a4845;
+  --green:#4ade80; --red:#f87171; --blue:#60a5fa; --purple:#a78bfa; --amber:#fbbf24;
+  --radius:10px; --radius-lg:16px;
+  --topbar-bg:rgba(13,13,15,.92); --grain-op:.4; --cal-f:invert(.7);
+}
+/* ── LIGHT ── */
+html.light{
+  --bg:#f5f4f0; --surface:#eceae4; --card:#ffffff;
+  --border:#dddad2; --border2:#c8c4ba;
+  --gold:#9a6e2e; --gold-dim:#b8923e; --gold-glow:rgba(154,110,46,.10);
+  --text:#1a1814; --text-muted:#6b6560; --text-dim:#aaa89f;
+  --green:#15803d; --red:#dc2626; --blue:#2563eb; --purple:#7c3aed; --amber:#d97706;
+  --topbar-bg:rgba(245,244,240,.94); --grain-op:.12; --cal-f:invert(.3);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line-height:1.5;transition:background .35s,color .35s}
+body::before{content:'';position:fixed;inset:0;z-index:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");pointer-events:none;opacity:var(--grain-op)}
+.app{position:relative;z-index:1;max-width:1300px;margin:0 auto;padding:0 24px 80px}
 
-        .pan-display { position: absolute; left: 20px; top: 50%; transform: translateY(-50%); font-size: 13px; font-weight: bold; color: #aaa; }
-        #liveClock { position: absolute; right: 20px; top: 50%; transform: translateY(-50%); font-family: 'Courier New', monospace; background: #444; padding: 5px 10px; border-radius: 5px; font-size: 14px; }
+/* ── TOPBAR ── */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:16px 0;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;background:var(--topbar-bg);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);transition:background .35s}
+.brand{display:flex;align-items:center;gap:14px}
+.brand-logo{width:42px;height:42px;border-radius:8px;background:linear-gradient(135deg,#c9a96e22,#c9a96e44);border:1px solid var(--gold-dim);display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--gold);font-weight:600;overflow:hidden}
+.brand-logo img{width:100%;height:100%;object-fit:cover;border-radius:7px}
+.brand-text h1{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;letter-spacing:.04em}
+.brand-text p{font-size:11px;color:var(--gold);letter-spacing:.12em;text-transform:uppercase}
+.topbar-right{display:flex;align-items:center;gap:16px}
+.clock{font-family:'DM Mono',monospace;font-size:13px;color:var(--gold);background:var(--gold-glow);border:1px solid var(--gold-dim);padding:6px 14px;border-radius:6px;letter-spacing:.08em}
+.pan-badge{font-family:'DM Mono',monospace;font-size:11px;color:var(--text-muted);letter-spacing:.06em}
 
-        /* Navigation & Controls */
-        input { padding:8px; margin:5px; border: 1px solid #ccc; border-radius: 4px; }
-        button { padding:8px 15px; margin:5px; cursor:pointer; font-weight: bold; border-radius: 4px; border: none; transition: 0.3s; }
-        button:hover { opacity: 0.8; }
-        .nav { margin:20px; background: #ddd; padding: 15px; display: inline-block; border-radius: 8px; border: 1px solid #bbb; }
-        
-        table { margin:20px auto; border-collapse: collapse; width:95%; background:white; }
-        th, td { border:1px solid #ddd; padding:10px; }
-        th { background:#444; color:white; }
-        
-        .danger { background:red; color:white; }
-        .view-btn { background: #17a2b8; color: white; }
-        .print-full-btn { background: #007bff; color: white; }
-        .select-print-btn { background: #28a745; color: white; }
-        .history-btn { background: #6f42c1; color: white; }
-        .monthly-btn { background: #ff8c00; color: white; }
-        .monthly-history-btn { background: #20c997; color: white; }
+/* theme toggle */
+.theme-toggle{width:52px;height:28px;background:var(--surface);border:1px solid var(--border2);border-radius:20px;cursor:pointer;display:flex;align-items:center;padding:3px;transition:border-color .2s;flex-shrink:0}
+.theme-toggle:hover{border-color:var(--gold-dim)}
+.theme-toggle .track{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;transition:transform .35s cubic-bezier(.34,1.56,.64,1);background:linear-gradient(135deg,var(--gold-dim),var(--gold));box-shadow:0 2px 6px rgba(0,0,0,.3)}
+html.light .theme-toggle .track{transform:translateX(24px)}
 
-        #billHistorySection { display: none; margin-top: 30px; border-top: 3px solid #6f42c1; padding-top: 20px; background: #f9f9f9; }
+/* contact strip */
+.contact-strip{display:flex;gap:22px;padding:9px 0;border-bottom:1px solid var(--border);font-size:11px;color:var(--text-muted)}
+.contact-strip span{display:flex;align-items:center;gap:6px}
+.contact-strip i{color:var(--gold);font-size:10px}
 
-        @media print {
-            .no-print, .nav, button, input, h3:not(#total), #status, .checkbox-cell, hr, #liveClock, #billHistorySection { display: none !important; }
-            body { background: white; padding: 0; }
-            .header-container { background: none; color: black; border-bottom: 2px solid black; }
-        }
-    </style>
+/* ── MAIN GRID ── */
+.main-grid{display:grid;grid-template-columns:330px 1fr;gap:22px;margin-top:24px;align-items:start}
+
+/* ── PANEL ── */
+.panel{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;transition:border-color .2s,background .35s}
+.panel:hover{border-color:var(--border2)}
+.panel-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.panel-header h3{font-size:11px;font-weight:500;color:var(--gold);text-transform:uppercase;letter-spacing:.14em}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--gold);flex-shrink:0}
+.panel-body{padding:18px}
+
+/* status */
+.status-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.status-badge{display:inline-flex;align-items:center;gap:7px;padding:5px 12px;border-radius:20px;font-size:11px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;transition:all .3s}
+.status-badge.open{background:rgba(74,222,128,.1);color:var(--green);border:1px solid rgba(74,222,128,.25)}
+.status-badge.closed{background:rgba(248,113,113,.1);color:var(--red);border:1px solid rgba(248,113,113,.25)}
+.status-badge::before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* date nav */
+.date-nav{display:flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:4px;margin-bottom:16px}
+.date-nav button{background:none;border:none;color:var(--gold);padding:6px 10px;cursor:pointer;border-radius:6px;font-size:14px;transition:background .2s}
+.date-nav button:hover{background:var(--gold-glow)}
+.date-nav input[type="date"]{flex:1;background:none;border:none;color:var(--text);font-family:'DM Mono',monospace;font-size:12px;padding:6px 4px;cursor:pointer;text-align:center;outline:none}
+.date-nav input[type="date"]::-webkit-calendar-picker-indicator{filter:var(--cal-f);cursor:pointer}
+
+/* fields */
+.field{margin-bottom:13px}
+.field label{display:block;font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px}
+.field input,.month-input,.year-input{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);padding:9px 13px;font-family:'Outfit',sans-serif;font-size:13px;outline:none;transition:border-color .2s,box-shadow .2s}
+.field input:focus,.month-input:focus,.year-input:focus{border-color:var(--gold-dim);box-shadow:0 0 0 3px var(--gold-glow)}
+.field input::placeholder{color:var(--text-dim)}
+.month-input,.year-input{margin-bottom:10px}
+.month-input::-webkit-calendar-picker-indicator,.year-input::-webkit-calendar-picker-indicator{filter:var(--cal-f);cursor:pointer}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:9px 16px;border-radius:var(--radius);font-family:'Outfit',sans-serif;font-size:12px;font-weight:500;cursor:pointer;border:none;transition:all .2s;letter-spacing:.04em;white-space:nowrap}
+.btn-primary{background:linear-gradient(135deg,#c9a96e,#a07840);color:#0d0d0f}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(201,169,110,.3)}
+.btn-ghost{background:var(--surface);color:var(--text);border:1px solid var(--border)}
+.btn-ghost:hover{border-color:var(--border2)}
+.btn-danger{background:rgba(248,113,113,.12);color:var(--red);border:1px solid rgba(248,113,113,.25)}
+.btn-danger:hover{background:rgba(248,113,113,.22)}
+.btn-blue{background:rgba(96,165,250,.12);color:var(--blue);border:1px solid rgba(96,165,250,.25)}
+.btn-blue:hover{background:rgba(96,165,250,.2)}
+.btn-purple{background:rgba(167,139,250,.12);color:var(--purple);border:1px solid rgba(167,139,250,.25)}
+.btn-purple:hover{background:rgba(167,139,250,.2)}
+.btn-green{background:rgba(74,222,128,.1);color:var(--green);border:1px solid rgba(74,222,128,.22)}
+.btn-green:hover{background:rgba(74,222,128,.18)}
+.btn-amber{background:rgba(251,191,36,.1);color:var(--amber);border:1px solid rgba(251,191,36,.25)}
+.btn-amber:hover{background:rgba(251,191,36,.18)}
+.btn-sm{padding:5px 11px;font-size:11px}
+.btn-full{width:100%}
+.btn-group{display:flex;flex-direction:column;gap:7px;margin-top:6px}
+.btn-row{display:flex;gap:8px}
+.btn-row .btn{flex:1}
+
+/* ── RIGHT COLUMN ── */
+.right-col{display:flex;flex-direction:column;gap:18px}
+.summary-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.summary-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px 18px;transition:border-color .2s,transform .2s,background .35s}
+.summary-card:hover{border-color:var(--gold-dim);transform:translateY(-2px)}
+.summary-card .lbl{font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.12em;margin-bottom:6px}
+.summary-card .val{font-family:'DM Mono',monospace;font-size:21px;color:var(--gold);font-weight:500}
+.summary-card .sub{font-size:10px;color:var(--text-dim);margin-top:3px}
+
+/* ── TABLE ── */
+.table-wrap{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;transition:background .35s,border-color .2s}
+.table-header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border)}
+.table-header h3{font-size:11px;font-weight:500;color:var(--gold);text-transform:uppercase;letter-spacing:.14em}
+.table-actions{display:flex;gap:8px}
+table{width:100%;border-collapse:collapse}
+thead th{padding:11px 14px;text-align:left;font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.12em;font-weight:500;background:var(--surface)}
+tbody tr{border-bottom:1px solid var(--border);transition:background .15s;animation:rowIn .22s ease both}
+@keyframes rowIn{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+tbody tr:hover{background:rgba(201,169,110,.04)}
+tbody tr:last-child{border-bottom:none}
+td{padding:11px 14px;font-size:13px}
+.item-name{font-weight:500}
+.amount{font-family:'DM Mono',monospace;font-weight:500}
+.amount.gc{color:var(--gold)}
+.checkbox-col input[type="checkbox"]{appearance:none;width:15px;height:15px;border:1px solid var(--border2);border-radius:4px;background:var(--surface);cursor:pointer;position:relative;transition:all .15s}
+.checkbox-col input[type="checkbox"]:checked{background:var(--gold);border-color:var(--gold)}
+.checkbox-col input[type="checkbox"]:checked::after{content:'✓';position:absolute;top:-1px;left:2px;font-size:10px;color:#0d0d0f;font-weight:700}
+.empty-state{padding:50px 20px;text-align:center}
+.empty-state .icon{font-size:30px;color:var(--text-dim);margin-bottom:10px}
+.empty-state p{font-size:13px;color:var(--text-dim)}
+
+/* ── MODAL ── */
+.modal-backdrop{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center}
+.modal-backdrop.open{display:flex;animation:fadeIn .2s ease}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.modal{background:var(--card);border:1px solid var(--border2);border-radius:var(--radius-lg);width:92%;max-width:820px;max-height:87vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 40px 80px rgba(0,0,0,.6);animation:slideUp .25s ease}
+@keyframes slideUp{from{transform:translateY(28px);opacity:0}to{transform:none;opacity:1}}
+.modal-top{display:flex;align-items:center;justify-content:space-between;padding:16px 22px;border-bottom:1px solid var(--border);flex-shrink:0}
+.modal-top h2{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:500}
+.modal-top span{font-size:11px;color:var(--gold);letter-spacing:.1em;text-transform:uppercase}
+.modal-close{background:var(--surface);border:1px solid var(--border);color:var(--text-muted);width:30px;height:30px;border-radius:7px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;transition:all .2s}
+.modal-close:hover{color:var(--text);border-color:var(--border2)}
+.modal-body{overflow-y:auto;flex:1;padding:0}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:28px;right:28px;z-index:999;background:var(--card);border:1px solid var(--gold-dim);color:var(--text);padding:11px 18px;border-radius:var(--radius);font-size:13px;box-shadow:0 10px 40px rgba(0,0,0,.4);transform:translateY(18px);opacity:0;transition:all .3s;pointer-events:none}
+.toast.show{transform:none;opacity:1}
+.toast.error{border-color:rgba(248,113,113,.5)}
+
+/* ── PRINT ── */
+@media print{
+  .no-print,.topbar,.contact-strip,.main-grid .panel,
+  .summary-row,.table-header .table-actions,.checkbox-col,
+  .action-col,.modal-backdrop,body::before{display:none!important}
+  body{background:#fff;color:#000;font-family:Arial,sans-serif}
+  .right-col{display:block}
+  .table-wrap{border:none;background:none}
+  table{border-collapse:collapse;width:100%}
+  thead th{background:#f0f0f0!important;color:#000!important;border:1px solid #999}
+  td{border:1px solid #ccc}
+  .amount.gc{color:#000}
+  tbody tr:hover{background:none}
+  tbody tr{animation:none}
+  /* print header */
+  .print-header{display:block!important}
+}
+.print-header{display:none}
+
+/* scrollbar */
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--gold-dim)}
+</style>
 </head>
-
 <body>
+<div class="app">
 
-<div class="header-container">
-    <div class="pan-display">PAN: 127228299</div>
-    <div class="header-main">
-        <img src="bcd.png" alt="Logo"> 
-        <h1>BCD SUPPLIERS</h1>
-    </div>
-    <div class="header-contact-info">
-        <span><i class="fa-solid fa-location-dot"></i> Kalimati-13, Kathmandu</span>
-        <span><i class="fa-solid fa-phone"></i> 9761795579 / 9702046747</span>
-        <span><i class="fa-solid fa-envelope"></i> bcdsuppliers@gmail.com</span>
-    </div>
-    <div id="liveClock" class="no-print">00:00:00</div>
+<!-- TOPBAR -->
+<header class="topbar no-print">
+  <div class="brand">
+    <div class="brand-logo"><img src="bcd.png" alt="BCD" onerror="this.parentElement.textContent='B'"></div>
+    <div class="brand-text"><h1>BCD Suppliers</h1><p>Billing System</p></div>
+  </div>
+  <div class="topbar-right">
+    <span class="pan-badge">PAN: 127228299</span>
+    <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Toggle theme">
+      <div class="track" id="themeIcon">🌙</div>
+    </button>
+    <div class="clock" id="liveClock">00:00:00</div>
+  </div>
+</header>
+
+<!-- CONTACT STRIP -->
+<div class="contact-strip no-print">
+  <span><i class="fa-solid fa-location-dot"></i> Kalimati-13, Kathmandu</span>
+  <span><i class="fa-solid fa-phone"></i> 9761795579 / 9702046747</span>
+  <span><i class="fa-solid fa-envelope"></i> bcdsuppliers@gmail.com</span>
+  <span><i class="fa-solid fa-globe"></i> www.bcdsuppliers.com.np</span>
 </div>
 
-<div class="nav no-print">
-    <div style="margin-bottom: 10px;">
-        <button onclick="prevDay()">⬅ Previous Day</button>
-        <input type="date" id="dateFilter" onchange="filterByDate(this.value)">
-        <button onclick="nextDay()">Next Day ➡</button>
-    </div>
-    <span id="currentDate" style="font-size:18px;font-weight:bold; display:block; margin-bottom:10px;"></span>
-    
-    <div style="border-top: 2px solid #bbb; padding-top: 15px; margin-top: 10px;">
-        <label style="font-size: 14px; font-weight: bold; color: #444;">📊 MONTHLY REPORTS</label><br>
-        <input type="month" id="monthFilter">
-        <div style="margin-top: 5px;">
-            <button class="monthly-btn" onclick="printMonthlyReport()">📄 Monthly Sales Report</button>
-            <button class="monthly-history-btn" onclick="printMonthlyBillHistory()">📋 Detailed Bill History</button>
+<!-- PRINT HEADER (shown only when printing full day) -->
+<div class="print-header" style="text-align:center;border-bottom:2px solid #111;padding-bottom:10px;margin-bottom:16px;">
+  <h1 style="font-size:22px;text-transform:uppercase;letter-spacing:.06em;">BCD SUPPLIERS</h1>
+  <p style="font-size:12px;color:#555;">Kalimati-13, Kathmandu &nbsp;|&nbsp; Ph: 9761795579, 9702046747 &nbsp;|&nbsp; bcdsuppliers@gmail.com</p>
+  <p style="font-size:11px;color:#777;margin-top:3px;">PAN: 127228299 &nbsp;|&nbsp; www.bcdsuppliers.com.np</p>
+  <p style="font-size:13px;font-weight:700;margin-top:6px;">DAILY SALES RECORD &nbsp;—&nbsp; <span id="printDateLabel"></span></p>
+</div>
+
+<!-- MAIN GRID -->
+<div class="main-grid">
+
+  <!-- LEFT PANEL -->
+  <aside>
+
+    <!-- SESSION -->
+    <div class="panel" style="margin-bottom:18px">
+      <div class="panel-header"><div class="dot"></div><h3>Session</h3></div>
+      <div class="panel-body">
+        <div class="status-row">
+          <span class="status-badge open" id="statusBadge">Open</span>
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-ghost btn-sm" onclick="openDay()">Open</button>
+            <button class="btn btn-ghost btn-sm" onclick="closeDay()">Close</button>
+          </div>
         </div>
+        <div class="date-nav">
+          <button onclick="prevDay()" title="Prev">‹</button>
+          <input type="date" id="dateFilter" onchange="filterByDate(this.value)">
+          <button onclick="nextDay()" title="Next">›</button>
+        </div>
+        <div style="font-size:11px;color:var(--text-muted);text-align:center" id="currentDateLabel"></div>
+      </div>
     </div>
+
+    <!-- ADD ITEM -->
+    <div class="panel" style="margin-bottom:18px">
+      <div class="panel-header"><div class="dot"></div><h3>Add Item</h3></div>
+      <div class="panel-body">
+        <div class="field"><label>Item Name</label><input type="text" id="item" placeholder="e.g. Cement, Steel Rod…"></div>
+        <div class="field"><label>Quantity</label><input type="number" id="qty" placeholder="0" min="1"></div>
+        <div class="field"><label>Unit Price (Rs)</label><input type="number" id="price" placeholder="0.00" step="0.01"></div>
+        <button class="btn btn-primary btn-full" onclick="addItem()"><i class="fa-solid fa-plus"></i> Add to Record</button>
+      </div>
+    </div>
+
+    <!-- ACTIONS -->
+    <div class="panel" style="margin-bottom:18px">
+      <div class="panel-header"><div class="dot"></div><h3>Actions</h3></div>
+      <div class="panel-body">
+        <div class="btn-group">
+          <button class="btn btn-ghost" onclick="printFullDay()"><i class="fa-solid fa-print"></i> Print Full Day Record</button>
+          <button class="btn btn-green" onclick="printSelectedItems()"><i class="fa-solid fa-check-square"></i> Print Selected Bill</button>
+          <button class="btn btn-purple" onclick="openHistoryModal()"><i class="fa-solid fa-clock-rotate-left"></i> View Bill Records</button>
+          <button class="btn btn-danger btn-sm" onclick="resetBillCounter()" style="font-size:10px"><i class="fa-solid fa-rotate-left"></i> Reset Bill Counter</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- REPORTS -->
+    <div class="panel">
+      <div class="panel-header"><div class="dot"></div><h3>Reports</h3></div>
+      <div class="panel-body">
+        <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px">Monthly</div>
+        <input type="month" id="monthFilter" class="month-input" placeholder="Select month">
+        <div class="btn-row">
+          <button class="btn btn-blue btn-sm" onclick="printMonthlyReport()" style="flex:1;font-size:11px"><i class="fa-solid fa-chart-bar"></i> Sales</button>
+          <button class="btn btn-ghost btn-sm" onclick="printMonthlyBillHistory()" style="flex:1;font-size:11px"><i class="fa-solid fa-list"></i> Bills</button>
+        </div>
+        <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.1em;margin:16px 0 8px">Yearly</div>
+        <input type="number" id="yearFilter" class="year-input" placeholder="e.g. 2024" min="2000" max="2100">
+        <div class="btn-row">
+          <button class="btn btn-amber btn-sm" onclick="printYearlyReport()" style="flex:1;font-size:11px"><i class="fa-solid fa-calendar-year"></i> Yearly Summary</button>
+          <button class="btn btn-ghost btn-sm" onclick="printYearlyBillHistory()" style="flex:1;font-size:11px"><i class="fa-solid fa-receipt"></i> All Bills</button>
+        </div>
+      </div>
+    </div>
+
+  </aside>
+
+  <!-- RIGHT COLUMN -->
+  <div class="right-col">
+
+    <!-- SUMMARY CARDS -->
+    <div class="summary-row">
+      <div class="summary-card"><div class="lbl">Total Items</div><div class="val" id="s-items">0</div><div class="sub">Line items today</div></div>
+      <div class="summary-card"><div class="lbl">Total Units</div><div class="val" id="s-units">0</div><div class="sub">Total quantity</div></div>
+      <div class="summary-card"><div class="lbl">Grand Total</div><div class="val" id="s-total">Rs 0</div><div class="sub">Today's revenue</div></div>
+    </div>
+
+    <!-- ITEM TABLE -->
+    <div class="table-wrap">
+      <div class="table-header no-print">
+        <h3>Daily Record</h3>
+        <div class="table-actions">
+          <button class="btn btn-ghost btn-sm" onclick="selectAll()">Select All</button>
+          <button class="btn btn-ghost btn-sm" onclick="clearSelection()">Clear</button>
+        </div>
+      </div>
+      <table id="mainTable" style="display:none">
+        <thead><tr>
+          <th class="no-print checkbox-col" style="width:40px"></th>
+          <th style="width:48px">S.N.</th>
+          <th>Item</th>
+          <th style="width:80px">Qty</th>
+          <th style="width:120px">Price</th>
+          <th style="width:130px">Total</th>
+          <th class="no-print action-col" style="width:80px">Act.</th>
+        </tr></thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+      <!-- print grand total row -->
+      <div id="printTotalRow" style="display:none;padding:12px 14px;text-align:right;font-family:'DM Mono',monospace;font-weight:600;font-size:14px;border-top:2px solid #999">
+        Grand Total: Rs <span id="printGrandTotal">0.00</span>
+      </div>
+      <div class="empty-state" id="emptyState">
+        <div class="icon"><i class="fa-regular fa-folder-open"></i></div>
+        <p>No items for this date. Add items above.</p>
+      </div>
+    </div>
+
+  </div>
 </div>
+</div><!-- /app -->
 
-<div class="no-print">
-    <h3>Status: <span id="status">Open</span></h3>
-    <input type="text" id="item" placeholder="Item Name">
-    <input type="number" id="qty" placeholder="Qty">
-    <input type="number" id="price" placeholder="Price">
-    <br>
-    <button onclick="addItem()" style="background:#444; color:white;">Add Item</button>
-    <button onclick="closeDay()" style="background:#666; color:white;">Close Day</button>
-    <button onclick="openDay()" style="background:#666; color:white;">Reopen Day</button>
-    <hr style="width: 50%; margin: 20px auto;">
-    <button class="print-full-btn" onclick="prepareAndPrintFull()">🖨 Print Full Day Record</button>
-    <button class="select-print-btn" onclick="printSelectedItems()">✅ Print Selected Items Only </button>
-    <button class="history-btn" onclick="toggleHistory()">📋 View Bill Records</button>
-    <button onclick="resetBillCounter()" style="background:#888; color:white; font-size:10px;">Reset Bill #</button>
-</div>
-
-<table id="table">
-    <thead>
-        <tr>
-            <th class="no-print checkbox-cell" style="width:40px;">Select</th>
-            <th style="width:50px;">S.N.</th>
-            <th>Item</th>
-            <th>Qty</th>
-            <th>Price</th>
-            <th>Total</th>
-            <th class="no-print">Actions</th>
-        </tr>
-    </thead>
-    <tbody id="tableBody"></tbody>
-</table>
-
-<h3 id="total"></h3>
-<h2 id="grand"></h2>
-
-<div id="billHistorySection" class="no-print">
-    <h2 style="color:#6f42c1;">Bill Records for <span id="historyDateLabel"></span></h2>
-    <table id="historyTable">
-        <thead>
-            <tr>
-                <th>Bill No</th>
-                <th>Time</th>
-                <th>Customer Name & Address</th>
-                <th>Total Amount</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
+<!-- BILL HISTORY MODAL -->
+<div class="modal-backdrop no-print" id="historyModal">
+  <div class="modal">
+    <div class="modal-top">
+      <div><h2>Bill Records</h2><span id="historyDateLabel">—</span></div>
+      <button class="modal-close" onclick="closeHistoryModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <table>
+        <thead><tr>
+          <th style="width:85px">Bill No.</th>
+          <th style="width:95px">Time</th>
+          <th>Customer</th>
+          <th style="width:120px">Amount</th>
+          <th style="width:120px">Actions</th>
+        </tr></thead>
         <tbody id="historyTableBody"></tbody>
-    </table>
+      </table>
+      <div class="empty-state" id="historyEmpty" style="display:none">
+        <div class="icon"><i class="fa-regular fa-receipt"></i></div>
+        <p>No individual bills found for this date.</p>
+      </div>
+    </div>
+  </div>
 </div>
+
+<div class="toast" id="toast"></div>
 
 <script>
-let today = new Date();
-today.setHours(0,0,0,0);
-let currentDate = new Date(today);
+/* ═══════════════ CONSTANTS ═══════════════ */
+const LOGO_URL     = "bcd.png";
+const PAN_NO       = "127228299";
+const COMPANY_NAME = "BCD SUPPLIERS";
+const WEBSITE_URL  = "www.bcdsuppliers.com.np";
+const PHONE_INFO   = "9761795579, 9702046747";
+const EMAIL_INFO   = "bcdsuppliers@gmail.com";
+const ADDRESS_INFO = "Kalimati-13, Kathmandu";
+
+/* shared print CSS for reports */
+const REPORT_CSS = `
+  @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap');
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Outfit',Arial,sans-serif;background:#fff;color:#111;padding:28px;font-size:13px}
+  .rpt-header{display:flex;align-items:center;justify-content:space-between;border-bottom:2.5px solid #111;padding-bottom:12px;margin-bottom:20px}
+  .rpt-header .left h1{font-size:22px;text-transform:uppercase;letter-spacing:.05em;font-weight:700}
+  .rpt-header .left p{font-size:11px;color:#666;margin-top:3px}
+  .rpt-header .right{text-align:right;font-size:11px;color:#666;line-height:1.7}
+  .rpt-title{font-size:16px;font-weight:700;color:#333;margin-bottom:18px;letter-spacing:.03em;display:flex;align-items:center;gap:10px}
+  .rpt-title span{background:#f0f0f0;padding:4px 12px;border-radius:4px;font-size:13px;color:#555}
+  table{width:100%;border-collapse:collapse;margin-bottom:20px}
+  thead th{background:#222;color:#fff;padding:10px 12px;font-size:11px;text-transform:uppercase;letter-spacing:.08em;font-weight:600;text-align:left}
+  thead th.r{text-align:right}
+  tbody td{border-bottom:1px solid #e5e5e5;padding:9px 12px;font-size:12px}
+  tbody td.r{text-align:right;font-weight:600}
+  tbody tr:nth-child(even){background:#fafafa}
+  tbody tr.total-row{background:#f5f5f5;font-weight:700}
+  .summary-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px}
+  .summary-box{background:#f8f8f8;border:1px solid #e0e0e0;border-radius:8px;padding:14px 16px}
+  .summary-box .s-lbl{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:#888;margin-bottom:4px}
+  .summary-box .s-val{font-size:20px;font-weight:700;color:#111}
+  .grand-total{text-align:right;font-size:18px;font-weight:700;border-top:2px solid #111;padding-top:10px;margin-top:4px}
+  .meta{font-size:10px;color:#aaa;margin-top:24px;border-top:1px solid #eee;padding-top:10px}
+  .bar-row{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+  .bar-lbl{width:90px;font-size:11px;color:#444;text-align:right;flex-shrink:0}
+  .bar-track{flex:1;background:#eee;border-radius:3px;height:16px;position:relative;overflow:hidden}
+  .bar-fill{height:100%;background:linear-gradient(90deg,#c9a96e,#a07840);border-radius:3px;transition:width .3s}
+  .bar-val{width:90px;font-size:11px;font-weight:600;text-align:left;flex-shrink:0}
+  @media print{body{padding:15px}@page{margin:10mm}}
+`;
+
+/* ═══════════════ STATE ═══════════════ */
+let currentDate = new Date(); currentDate.setHours(0,0,0,0);
 let isClosed = false;
 
-const LOGO_URL = "bcd.png"; 
-const PAN_NO = "127228299"; 
-const COMPANY_NAME = "BCD SUPPLIERS";
-const WEBSITE_URL = "www.bcdsuppliers.com.np";
-const PHONE_INFO = "9761795579, 9702046747";
-const EMAIL_INFO = "bcdsuppliers@gmail.com";
-
-function updateClock() {
-    const now = new Date();
-    document.getElementById('liveClock').innerText = now.toLocaleTimeString();
+/* ═══════════════ UTILS ═══════════════ */
+function formatDate(d){ let z=d.getTimezoneOffset()*60000; return (new Date(d-z)).toISOString().slice(0,10); }
+function key(){ return formatDate(currentDate); }
+function saveData(data){ localStorage.setItem(key(),JSON.stringify(data)); }
+function showToast(msg,err=false){
+  let t=document.getElementById('toast');
+  t.textContent=msg; t.className='toast'+(err?' error':''); t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3000);
 }
-setInterval(updateClock, 1000);
-updateClock();
-
-function formatDate(d){
-    let z = d.getTimezoneOffset() * 60000;
-    return (new Date(d - z)).toISOString().slice(0, 10);
-}
-
-function filterByDate(val) {
-    if(!val) return;
-    currentDate = new Date(val);
-    loadData();
+function monthName(m){ return ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][parseInt(m)-1]; }
+function openPrint(html, w=900, h=700){ let pw=window.open('','_blank',`width=${w},height=${h}`); pw.document.write(html); pw.document.close(); return pw; }
+function reportHeader(subtitle){
+  return `<div class="rpt-header">
+    <div class="left"><h1>${COMPANY_NAME}</h1><p>${ADDRESS_INFO} &nbsp;|&nbsp; Ph: ${PHONE_INFO}</p><p>${EMAIL_INFO} &nbsp;|&nbsp; ${WEBSITE_URL}</p></div>
+    <div class="right"><div style="font-size:13px;font-weight:700;margin-bottom:4px">${subtitle}</div><div>PAN: ${PAN_NO}</div><div>Generated: ${new Date().toLocaleString()}</div></div>
+  </div>`;
 }
 
+/* ═══════════════ CLOCK ═══════════════ */
+function updateClock(){ document.getElementById('liveClock').textContent=new Date().toLocaleTimeString(); }
+setInterval(updateClock,1000); updateClock();
+
+/* ═══════════════ LOAD / SAVE ═══════════════ */
 function loadData(){
-    let key = formatDate(currentDate);
-    document.getElementById("currentDate").innerText = "Date: " + key;
-    document.getElementById("historyDateLabel").innerText = key;
-    document.getElementById("dateFilter").value = key;
-    
-    let data = JSON.parse(localStorage.getItem(key)) || [];
-    let status = localStorage.getItem(key+"_status") || "open";
-    isClosed = (status === "closed");
-    document.getElementById("status").innerText = status.toUpperCase();
-    
-    renderTable(data);
-    renderHistory();
+  let k=key();
+  document.getElementById('dateFilter').value=k;
+  let d=new Date(k+'T00:00:00');
+  document.getElementById('currentDateLabel').textContent=d.toLocaleDateString('en-NP',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  document.getElementById('historyDateLabel').textContent=k;
+  document.getElementById('printDateLabel').textContent=k;
+
+  let data=JSON.parse(localStorage.getItem(k))||[];
+  let status=localStorage.getItem(k+'_status')||'open';
+  isClosed=status==='closed';
+  let badge=document.getElementById('statusBadge');
+  badge.textContent=status.toUpperCase(); badge.className='status-badge '+status;
+  renderTable(data); renderHistory();
 }
 
-function saveData(data){
-    let key = formatDate(currentDate);
-    localStorage.setItem(key, JSON.stringify(data));
-}
-
-function addItem(){
-    if(isClosed){ alert("Day is closed!"); return; }
-    let item = document.getElementById("item").value;
-    let qty = parseInt(document.getElementById("qty").value);
-    let price = parseFloat(document.getElementById("price").value);
-    if(!item || isNaN(qty) || isNaN(price)){ alert("Check fields"); return; }
-    let key = formatDate(currentDate);
-    let data = JSON.parse(localStorage.getItem(key)) || [];
-    data.push({ item, qty, price, total: qty * price });
-    saveData(data);
-    loadData();
-    document.getElementById("item").value = "";
-    document.getElementById("qty").value = "";
-    document.getElementById("price").value = "";
-}
-
+/* ═══════════════ RENDER TABLE ═══════════════ */
 function renderTable(data){
-    let tableBody = document.getElementById("tableBody");
-    tableBody.innerHTML = "";
-    let sum = 0;
-    data.forEach((d, i) => {
-        let row = tableBody.insertRow();
-        row.insertCell(0).innerHTML = `<input type="checkbox" class="item-checkbox no-print" data-index="${i}">`;
-        row.cells[0].className = "no-print";
-        row.insertCell(1).innerText = i + 1; 
-        row.insertCell(2).innerText = d.item;
-        row.insertCell(3).innerText = d.qty;
-        row.insertCell(4).innerText = d.price;
-        row.insertCell(5).innerText = d.total;
-        let actionCell = row.insertCell(6);
-        actionCell.className = "no-print"; 
-        actionCell.innerHTML = isClosed ? "Locked" : `<button class='danger' onclick='deleteItem(${i})'>Delete</button>`;
-        sum += d.total;
-    });
-    document.getElementById("total").innerText = "Total: Rs " + sum;
-    document.getElementById("grand").innerText = "Grand Total: Rs " + sum.toFixed(2);
+  let tbody=document.getElementById('tableBody'); tbody.innerHTML='';
+  let sum=0,units=0;
+  data.forEach((d,i)=>{
+    sum+=d.total; units+=d.qty;
+    let tr=document.createElement('tr'); tr.style.animationDelay=(i*.04)+'s';
+    tr.innerHTML=`
+      <td class="no-print checkbox-col"><input type="checkbox" class="item-checkbox" data-index="${i}"></td>
+      <td style="color:var(--text-dim);font-family:'DM Mono',monospace;font-size:11px">${String(i+1).padStart(2,'0')}</td>
+      <td class="item-name">${d.item}</td>
+      <td class="amount">${d.qty}</td>
+      <td class="amount">Rs ${parseFloat(d.price).toFixed(2)}</td>
+      <td class="amount gc">Rs ${parseFloat(d.total).toFixed(2)}</td>
+      <td class="no-print action-col">
+        ${isClosed?'<span style="font-size:10px;color:var(--text-dim)">Locked</span>'
+          :`<button class="btn btn-danger btn-sm" onclick="deleteItem(${i})"><i class="fa-solid fa-xmark"></i></button>`}
+      </td>`;
+    tbody.appendChild(tr);
+  });
+  let empty=data.length===0;
+  document.getElementById('emptyState').style.display=empty?'':'none';
+  document.getElementById('mainTable').style.display=empty?'none':'';
+  document.getElementById('printTotalRow').style.display=empty?'none':'';
+  document.getElementById('printGrandTotal').textContent=sum.toFixed(2);
+  document.getElementById('s-items').textContent=data.length;
+  document.getElementById('s-units').textContent=units;
+  document.getElementById('s-total').textContent='Rs '+sum.toFixed(2);
 }
 
-function toggleHistory() {
-    let section = document.getElementById("billHistorySection");
-    section.style.display = (section.style.display === "none" || section.style.display === "") ? "block" : "none";
+/* ═══════════════ ADD / DELETE ═══════════════ */
+function addItem(){
+  if(isClosed){showToast('Day is closed!',true);return;}
+  let item=document.getElementById('item').value.trim();
+  let qty=parseInt(document.getElementById('qty').value);
+  let price=parseFloat(document.getElementById('price').value);
+  if(!item||isNaN(qty)||qty<1||isNaN(price)||price<0){showToast('Please fill all fields correctly.',true);return;}
+  let data=JSON.parse(localStorage.getItem(key()))||[];
+  data.push({item,qty,price,total:qty*price}); saveData(data); loadData();
+  ['item','qty','price'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('item').focus();
+  showToast('Item added successfully.');
+}
+function deleteItem(i){
+  if(!confirm('Delete this item?'))return;
+  let data=JSON.parse(localStorage.getItem(key()))||[];
+  data.splice(i,1); saveData(data); loadData(); showToast('Item deleted.');
 }
 
-function renderHistory() {
-    let key = formatDate(currentDate);
-    let allHistory = JSON.parse(localStorage.getItem("all_bill_history")) || [];
-    let hTableBody = document.getElementById("historyTableBody");
-    hTableBody.innerHTML = "";
-    
-    let dailyHistory = allHistory.filter(bill => bill.date === key);
-    
-    if (dailyHistory.length === 0) {
-        hTableBody.innerHTML = "<tr><td colspan='5' style='padding:20px; color:#888;'>No individual bills found for this date.</td></tr>";
-        return;
+/* ═══════════════ DAY CONTROLS ═══════════════ */
+function closeDay(){localStorage.setItem(key()+'_status','closed');loadData();showToast('Day closed.');}
+function openDay(){localStorage.setItem(key()+'_status','open');loadData();showToast('Day reopened.');}
+function prevDay(){currentDate.setDate(currentDate.getDate()-1);loadData();}
+function nextDay(){currentDate.setDate(currentDate.getDate()+1);loadData();}
+function filterByDate(v){if(v){currentDate=new Date(v+'T00:00:00');loadData();}}
+function selectAll(){document.querySelectorAll('.item-checkbox').forEach(c=>c.checked=true);}
+function clearSelection(){document.querySelectorAll('.item-checkbox').forEach(c=>c.checked=false);}
+function resetBillCounter(){if(confirm('Reset bill counter to 0?')){localStorage.setItem('lastBillNumber',0);showToast('Counter reset.');}}
+
+/* ═══════════════ PRINT FULL DAY RECORD ═══════════════ */
+function printFullDay(){
+  let k=key();
+  let data=JSON.parse(localStorage.getItem(k))||[];
+  if(!data.length){showToast('No items to print.',true);return;}
+  let total=data.reduce((s,d)=>s+d.total,0);
+
+  let rows=data.map((d,i)=>`
+    <tr>
+      <td style="text-align:center">${i+1}</td>
+      <td>${d.item}</td>
+      <td style="text-align:center">${d.qty}</td>
+      <td style="text-align:right">Rs ${parseFloat(d.price).toFixed(2)}</td>
+      <td style="text-align:right;font-weight:600">Rs ${parseFloat(d.total).toFixed(2)}</td>
+    </tr>`).join('');
+
+  let html=`<!DOCTYPE html><html><head><title>Daily Record — ${k}</title>
+  <style>
+    ${REPORT_CSS}
+    @page{size:A4;margin:15mm}
+    .sign-row{display:flex;justify-content:space-between;margin-top:40px;padding:0 10px}
+    .sign-box{text-align:center;width:140px}
+    .sign-box div{border-top:1px solid #111;padding-top:4px;font-size:11px;font-weight:600;color:#555;margin-top:30px}
+  </style></head><body>
+  ${reportHeader('DAILY SALES RECORD')}
+  <div class="rpt-title">Date: <span>${k}</span></div>
+  <div class="summary-grid">
+    <div class="summary-box"><div class="s-lbl">Total Items</div><div class="s-val">${data.length}</div></div>
+    <div class="summary-box"><div class="s-lbl">Total Units</div><div class="s-val">${data.reduce((s,d)=>s+d.qty,0)}</div></div>
+    <div class="summary-box"><div class="s-lbl">Grand Total</div><div class="s-val">Rs ${total.toFixed(2)}</div></div>
+  </div>
+  <table>
+    <thead><tr><th style="width:8%;text-align:center">S.N.</th><th>Item Description</th><th style="width:10%;text-align:center">Qty</th><th style="width:18%" class="r">Unit Price</th><th style="width:20%" class="r">Total</th></tr></thead>
+    <tbody>${rows}
+      <tr class="total-row"><td colspan="4" style="text-align:right;padding-right:16px">GRAND TOTAL</td><td style="text-align:right;padding:10px 12px;font-size:14px">Rs ${total.toFixed(2)}</td></tr>
+    </tbody>
+  </table>
+  <div class="sign-row">
+    <div class="sign-box"><div>Prepared By</div></div>
+    <div class="sign-box"><div>Checked By</div></div>
+    <div class="sign-box"><div>Authorized Signature</div></div>
+  </div>
+  <div class="meta">BCD Suppliers — ${ADDRESS_INFO} | PAN: ${PAN_NO} | ${WEBSITE_URL}</div>
+  <script>window.onload=function(){setTimeout(function(){window.print();window.close();},500);}<\/script>
+  </body></html>`;
+  openPrint(html,850,700);
+}
+
+/* ═══════════════ INDIVIDUAL BILL PRINT ═══════════════ */
+function printSelectedItems(){
+  let data=JSON.parse(localStorage.getItem(key()))||[];
+  let cbs=document.querySelectorAll('.item-checkbox:checked');
+  if(!cbs.length){showToast('Select at least one item.',true);return;}
+  let input=prompt('Customer Name & Address:','Cash Sales');
+  let customer=(!input||!input.trim())?'Cash Sales':input.trim();
+  let billNo=parseInt(localStorage.getItem('lastBillNumber')||0)+1;
+  let selected=Array.from(cbs).map(cb=>data[parseInt(cb.dataset.index)]);
+  let billTotal=selected.reduce((s,i)=>s+i.total,0);
+  let bill={billNo,date:key(),time:new Date().toLocaleTimeString(),customer,items:selected,grandTotal:billTotal};
+  let history=JSON.parse(localStorage.getItem('all_bill_history'))||[];
+  history.push(bill); localStorage.setItem('all_bill_history',JSON.stringify(history));
+  localStorage.setItem('lastBillNumber',billNo);
+  reprintBill(bill); loadData(); showToast(`Bill #${billNo} created.`);
+}
+
+function reprintBill(bill){
+  let rows=bill.items.map((it,i)=>`
+    <tr>
+      <td style="text-align:center;width:7%">${i+1}</td>
+      <td>${it.item}</td>
+      <td style="text-align:center;width:9%">${it.qty}</td>
+      <td style="text-align:right;width:18%">Rs ${parseFloat(it.price).toFixed(2)}</td>
+      <td style="text-align:right;width:20%;font-weight:700">Rs ${parseFloat(it.total).toFixed(2)}</td>
+    </tr>`).join('');
+
+  let html=`<!DOCTYPE html><html><head>
+    <title>Bill #${bill.billNo}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+      @page{size:A5;margin:0}
+      *{box-sizing:border-box;margin:0;padding:0}
+      body{font-family:'Outfit',Arial,sans-serif;background:#fff;color:#111;font-size:11px;width:148mm;min-height:210mm}
+      .bill{border:1.2px solid #111;margin:4mm;padding:5mm 7mm;min-height:199mm;display:flex;flex-direction:column}
+      .top-meta{display:flex;justify-content:space-between;font-size:9px;font-weight:700;color:#555;margin-bottom:3mm;letter-spacing:.04em}
+      .hd{display:flex;align-items:center;gap:9px;border-bottom:1.5px solid #111;padding-bottom:3mm;margin-bottom:3mm}
+      .hd img{height:38px;border-radius:4px}
+      .hd h2{font-size:17px;font-weight:800;letter-spacing:.05em;text-transform:uppercase}
+      .hd p{font-size:9px;color:#555;line-height:1.5;margin-top:2px}
+      .meta-row{display:flex;justify-content:space-between;font-size:10px;font-weight:600;border-bottom:1px dashed #bbb;padding-bottom:2mm;margin-bottom:2mm}
+      .cust{font-size:10.5px;font-weight:600;margin-bottom:3mm;background:#f8f8f8;padding:2mm 3mm;border-radius:3px}
+      table{width:100%;border-collapse:collapse}
+      thead th{background:#222;color:#fff;padding:4px 5px;font-size:9px;text-transform:uppercase;letter-spacing:.05em;font-weight:600}
+      thead th.r{text-align:right}
+      tbody td{border-bottom:.6px solid #ddd;padding:3.5px 5px;font-size:10px}
+      tbody tr:last-child td{border-bottom:none}
+      .subtotal-row td{background:#f5f5f5;font-weight:700;font-size:11px}
+      .total-box{margin-top:4mm;border:1.5px solid #111;border-radius:3px;padding:2mm 3mm;display:flex;justify-content:space-between;align-items:center}
+      .total-box .label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em}
+      .total-box .amount{font-size:16px;font-weight:800}
+      .spacer{flex:1;min-height:8mm}
+      .sigs{display:flex;justify-content:space-between;padding:0 3mm;margin-top:8mm}
+      .sig{text-align:center;width:100px}
+      .sig .line{border-top:1px solid #111;padding-top:2px;font-size:8.5px;font-weight:700;color:#555;margin-top:20px}
+      .foot{text-align:center;font-size:8.5px;color:#888;font-weight:600;margin-top:4mm;letter-spacing:.04em}
+      .thank{text-align:center;font-size:9px;color:#666;margin-top:2mm;font-style:italic}
+    </style></head>
+    <body>
+    <div class="bill">
+      <div class="top-meta"><span>PAN: ${PAN_NO}</span><span>Bill No: #${bill.billNo}</span></div>
+      <div class="hd">
+        <img src="${LOGO_URL}" onerror="this.style.display='none'">
+        <div><h2>${COMPANY_NAME}</h2><p>${ADDRESS_INFO}<br>Ph: ${PHONE_INFO}<br>${EMAIL_INFO}</p></div>
+      </div>
+      <div class="meta-row"><span>📅 Date: ${bill.date}</span><span>🕐 Time: ${bill.time}</span></div>
+      <div class="cust">📋 Bill To: <strong>${bill.customer}</strong></div>
+      <table>
+        <thead><tr><th style="width:7%;text-align:center">S.N</th><th>Item Description</th><th style="width:9%;text-align:center">Qty</th><th style="width:18%" class="r">Price</th><th style="width:20%" class="r">Total</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+      <div class="total-box">
+        <div class="label">Grand Total</div>
+        <div class="amount">Rs ${bill.grandTotal.toFixed(2)}</div>
+      </div>
+      <div class="spacer"></div>
+      <div class="sigs">
+        <div class="sig"><div class="line">Receiver's Signature</div></div>
+        <div class="sig"><div class="line">Authorized Signature</div></div>
+      </div>
+      <div class="foot">${WEBSITE_URL}</div>
+      <div class="thank">Thank you for your business!</div>
+    </div>
+    <script>window.onload=function(){setTimeout(function(){window.print();window.close();},500);}<\/script>
+    </body></html>`;
+  openPrint(html,620,850);
+}
+
+/* ═══════════════ BILL HISTORY MODAL ═══════════════ */
+function openHistoryModal(){document.getElementById('historyModal').classList.add('open');renderHistory();}
+function closeHistoryModal(){document.getElementById('historyModal').classList.remove('open');}
+document.getElementById('historyModal').addEventListener('click',function(e){if(e.target===this)closeHistoryModal();});
+
+function renderHistory(){
+  let k=key(), allH=JSON.parse(localStorage.getItem('all_bill_history'))||[];
+  let daily=allH.filter(b=>b.date===k).reverse();
+  let tbody=document.getElementById('historyTableBody'); tbody.innerHTML='';
+  document.getElementById('historyEmpty').style.display=daily.length===0?'':'none';
+  if(!daily.length)return;
+  daily.forEach(bill=>{
+    let tr=document.createElement('tr');
+    tr.innerHTML=`
+      <td style="font-family:'DM Mono',monospace;font-size:11px">#${bill.billNo}</td>
+      <td style="font-size:11px;color:var(--text-muted)">${bill.time}</td>
+      <td>${bill.customer}</td>
+      <td class="amount gc">Rs ${bill.grandTotal.toFixed(2)}</td>
+      <td><div style="display:flex;gap:6px">
+        <button class="btn btn-blue btn-sm" onclick='reprintBill(${JSON.stringify(bill)})'><i class="fa-solid fa-eye"></i></button>
+        ${isClosed?'':`<button class="btn btn-danger btn-sm" onclick="deleteBill(${bill.billNo})"><i class="fa-solid fa-xmark"></i></button>`}
+      </div></td>`;
+    tbody.appendChild(tr);
+  });
+}
+function deleteBill(no){
+  if(!confirm(`Delete Bill #${no}?`))return;
+  let h=JSON.parse(localStorage.getItem('all_bill_history'))||[];
+  h=h.filter(b=>b.billNo!==no);
+  localStorage.setItem('all_bill_history',JSON.stringify(h));
+  renderHistory(); showToast(`Bill #${no} deleted.`);
+}
+
+/* ═══════════════ MONTHLY REPORTS ═══════════════ */
+function getMonthData(m){
+  /* returns {days:[{date,total,count}], bills:[...], grandTotal, totalBills, totalItems} */
+  let days=[],grand=0,totalBills=0,totalItems=0;
+  for(let i=0;i<localStorage.length;i++){
+    let k=localStorage.key(i);
+    if(k.startsWith(m)&&k.length===10){
+      let d=JSON.parse(localStorage.getItem(k))||[];
+      let t=d.reduce((s,x)=>s+x.total,0);
+      if(d.length){days.push({date:k,total:t,count:d.length});grand+=t;totalItems+=d.length;}
     }
-
-    dailyHistory.slice().reverse().forEach((bill) => {
-        let row = hTableBody.insertRow();
-        row.insertCell(0).innerText = bill.billNo;
-        row.insertCell(1).innerText = bill.time;
-        row.insertCell(2).innerText = bill.customer;
-        row.insertCell(3).innerText = "Rs " + bill.grandTotal.toFixed(2);
-        let actions = row.insertCell(4);
-        
-        let deleteBtn = isClosed ? "" : `<button class="danger" style="padding:4px 8px; font-size:10px" onclick='deleteBill(${bill.billNo})'>Delete</button>`;
-        
-        actions.innerHTML = `
-            <button class="view-btn" onclick='reprintBill(${JSON.stringify(bill)})'>👁 View</button> 
-            ${deleteBtn}
-        `;
-    });
+  }
+  days.sort((a,b)=>new Date(a.date)-new Date(b.date));
+  let allH=JSON.parse(localStorage.getItem('all_bill_history'))||[];
+  let bills=allH.filter(b=>b.date.startsWith(m)).sort((a,b)=>new Date(a.date)-new Date(b.date)||a.billNo-b.billNo);
+  totalBills=bills.length;
+  return{days,bills,grand,totalBills,totalItems};
 }
 
-function deleteBill(bNo) {
-    if(confirm("Delete record for Bill #" + bNo + "?")) {
-        let history = JSON.parse(localStorage.getItem("all_bill_history")) || [];
-        history = history.filter(b => b.billNo !== bNo);
-        localStorage.setItem("all_bill_history", JSON.stringify(history));
-        renderHistory();
+function printMonthlyReport(){
+  let m=document.getElementById('monthFilter').value;
+  if(!m){showToast('Select a month first.',true);return;}
+  let{days,bills,grand,totalBills,totalItems}=getMonthData(m);
+  if(!days.length){showToast('No data for '+m,true);return;}
+
+  let maxT=Math.max(...days.map(d=>d.total),1);
+  let barRows=days.map(d=>`
+    <div class="bar-row">
+      <div class="bar-lbl">${d.date.slice(8)}-${monthName(d.date.slice(5,7))}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${(d.total/maxT*100).toFixed(1)}%"></div></div>
+      <div class="bar-val">Rs ${d.total.toFixed(0)}</div>
+    </div>`).join('');
+
+  let tableRows=days.map(d=>`
+    <tr><td>${d.date}</td><td style="text-align:center">${d.count}</td><td class="r">Rs ${d.total.toFixed(2)}</td></tr>`).join('');
+
+  let avgDaily=(grand/days.length).toFixed(2);
+
+  let html=`<!DOCTYPE html><html><head><title>Monthly Report — ${m}</title><style>${REPORT_CSS}</style></head><body>
+  ${reportHeader('MONTHLY SALES REPORT')}
+  <div class="rpt-title">Month: <span>${monthName(m.slice(5,7))} ${m.slice(0,4)}</span></div>
+  <div class="summary-grid">
+    <div class="summary-box"><div class="s-lbl">Total Revenue</div><div class="s-val">Rs ${grand.toFixed(2)}</div></div>
+    <div class="summary-box"><div class="s-lbl">Active Days</div><div class="s-val">${days.length}</div></div>
+    <div class="summary-box"><div class="s-lbl">Avg Daily Sales</div><div class="s-val">Rs ${avgDaily}</div></div>
+    <div class="summary-box"><div class="s-lbl">Total Line Items</div><div class="s-val">${totalItems}</div></div>
+    <div class="summary-box"><div class="s-lbl">Individual Bills</div><div class="s-val">${totalBills}</div></div>
+    <div class="summary-box"><div class="s-lbl">Best Day</div><div class="s-val" style="font-size:14px">${days.reduce((a,b)=>b.total>a.total?b:a).date}</div></div>
+  </div>
+  <div style="margin-bottom:20px"><div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px;color:#333">Daily Sales Chart</div>${barRows}</div>
+  <table>
+    <thead><tr><th>Date</th><th style="text-align:center;width:15%">Items</th><th class="r" style="width:22%">Daily Total</th></tr></thead>
+    <tbody>${tableRows}<tr class="total-row"><td colspan="2" style="text-align:right">MONTHLY TOTAL</td><td class="r" style="font-size:14px">Rs ${grand.toFixed(2)}</td></tr></tbody>
+  </table>
+  <div class="meta">Generated on ${new Date().toLocaleString()} &nbsp;|&nbsp; BCD Suppliers — PAN: ${PAN_NO}</div>
+  <script>window.onload=function(){window.print();window.close();}<\/script></body></html>`;
+  openPrint(html,900,750);
+}
+
+function printMonthlyBillHistory(){
+  let m=document.getElementById('monthFilter').value;
+  if(!m){showToast('Select a month first.',true);return;}
+  let{bills,grand}=getMonthData(m);
+  if(!bills.length){showToast('No bills for '+m,true);return;}
+
+  let rows=bills.map(b=>`<tr><td style="font-family:monospace">#${b.billNo}</td><td>${b.date}</td><td>${b.time}</td><td>${b.customer}</td><td class="r">Rs ${b.grandTotal.toFixed(2)}</td></tr>`).join('');
+
+  let html=`<!DOCTYPE html><html><head><title>Bill History — ${m}</title><style>${REPORT_CSS}</style></head><body>
+  ${reportHeader('MONTHLY BILL HISTORY')}
+  <div class="rpt-title">Month: <span>${monthName(m.slice(5,7))} ${m.slice(0,4)}</span> &nbsp;|&nbsp; <span>${bills.length} Bills</span></div>
+  <table>
+    <thead><tr><th style="width:10%">Bill No</th><th style="width:13%">Date</th><th style="width:12%">Time</th><th>Customer</th><th class="r" style="width:18%">Amount</th></tr></thead>
+    <tbody>${rows}<tr class="total-row"><td colspan="4" style="text-align:right">MONTHLY TOTAL</td><td class="r" style="font-size:14px">Rs ${grand.toFixed(2)}</td></tr></tbody>
+  </table>
+  <div class="meta">Generated on ${new Date().toLocaleString()} &nbsp;|&nbsp; BCD Suppliers — PAN: ${PAN_NO}</div>
+  <script>window.onload=function(){window.print();window.close();}<\/script></body></html>`;
+  openPrint(html,900,700);
+}
+
+/* ═══════════════ YEARLY REPORTS ═══════════════ */
+function getYearData(yr){
+  let months=[];
+  let allH=JSON.parse(localStorage.getItem('all_bill_history'))||[];
+  for(let mo=1;mo<=12;mo++){
+    let m=yr+'-'+String(mo).padStart(2,'0');
+    let days=0,total=0,items=0;
+    for(let i=0;i<localStorage.length;i++){
+      let k=localStorage.key(i);
+      if(k.startsWith(m)&&k.length===10){
+        let d=JSON.parse(localStorage.getItem(k))||[];
+        if(d.length){days++;total+=d.reduce((s,x)=>s+x.total,0);items+=d.length;}
+      }
     }
+    let bills=allH.filter(b=>b.date.startsWith(m));
+    months.push({month:m,label:monthName(mo),days,total,items,billCount:bills.length});
+  }
+  let grand=months.reduce((s,m)=>s+m.total,0);
+  let totalDays=months.reduce((s,m)=>s+m.days,0);
+  let totalItems=months.reduce((s,m)=>s+m.items,0);
+  let totalBills=months.reduce((s,m)=>s+m.billCount,0);
+  return{months,grand,totalDays,totalItems,totalBills};
 }
 
-function printSelectedItems() {
-    let key = formatDate(currentDate);
-    let data = JSON.parse(localStorage.getItem(key)) || [];
-    let selectedItems = [];
-    let checkboxes = document.querySelectorAll('.item-checkbox:checked');
-    
-    if (checkboxes.length === 0) { alert("Select items first!"); return; }
+function printYearlyReport(){
+  let yr=document.getElementById('yearFilter').value;
+  if(!yr){showToast('Enter a year first.',true);return;}
+  let{months,grand,totalDays,totalItems,totalBills}=getYearData(yr);
+  let activeMonths=months.filter(m=>m.total>0);
+  if(!activeMonths.length){showToast('No data for year '+yr,true);return;}
 
-    let inputInfo = prompt("Enter Customer Name & Address:", "Cash Sales");
-    let customerInfo = (inputInfo === null || inputInfo.trim() === "") ? "Cash Sales" : inputInfo;
+  let maxT=Math.max(...months.map(m=>m.total),1);
+  let barRows=months.map(m=>`
+    <div class="bar-row">
+      <div class="bar-lbl">${m.label}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${(m.total/maxT*100).toFixed(1)}%"></div></div>
+      <div class="bar-val">${m.total>0?'Rs '+m.total.toFixed(0):'—'}</div>
+    </div>`).join('');
 
-    let billNo = localStorage.getItem("lastBillNumber") || 0;
-    billNo = parseInt(billNo) + 1;
+  let tableRows=months.map(m=>`
+    <tr style="${m.total===0?'color:#bbb':''}">
+      <td>${m.label} ${yr}</td>
+      <td style="text-align:center">${m.days||'—'}</td>
+      <td style="text-align:center">${m.items||'—'}</td>
+      <td style="text-align:center">${m.billCount||'—'}</td>
+      <td class="r">${m.total>0?'Rs '+m.total.toFixed(2):'—'}</td>
+    </tr>`).join('');
 
-    checkboxes.forEach(cb => selectedItems.push(data[cb.getAttribute('data-index')]));
-    let billTotal = selectedItems.reduce((acc, curr) => acc + curr.total, 0);
+  let bestMonth=activeMonths.reduce((a,b)=>b.total>a.total?b:a);
+  let avgMonth=(grand/activeMonths.length).toFixed(2);
 
-    const billRecord = {
-        billNo: billNo,
-        date: key,
-        time: new Date().toLocaleTimeString(),
-        customer: customerInfo,
-        items: selectedItems,
-        grandTotal: billTotal
-    };
-
-    let history = JSON.parse(localStorage.getItem("all_bill_history")) || [];
-    history.push(billRecord);
-    localStorage.setItem("all_bill_history", JSON.stringify(history));
-    
-    localStorage.setItem("lastBillNumber", billNo);
-    reprintBill(billRecord);
-    loadData();
+  let html=`<!DOCTYPE html><html><head><title>Yearly Report — ${yr}</title><style>${REPORT_CSS}</style></head><body>
+  ${reportHeader('YEARLY SALES REPORT')}
+  <div class="rpt-title">Year: <span>${yr}</span></div>
+  <div class="summary-grid">
+    <div class="summary-box"><div class="s-lbl">Total Revenue</div><div class="s-val">Rs ${grand.toFixed(2)}</div></div>
+    <div class="summary-box"><div class="s-lbl">Active Months</div><div class="s-val">${activeMonths.length} / 12</div></div>
+    <div class="summary-box"><div class="s-lbl">Avg Monthly</div><div class="s-val">Rs ${avgMonth}</div></div>
+    <div class="summary-box"><div class="s-lbl">Total Working Days</div><div class="s-val">${totalDays}</div></div>
+    <div class="summary-box"><div class="s-lbl">Individual Bills</div><div class="s-val">${totalBills}</div></div>
+    <div class="summary-box"><div class="s-lbl">Best Month</div><div class="s-val" style="font-size:14px">${bestMonth.label}</div></div>
+  </div>
+  <div style="margin-bottom:20px"><div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px;color:#333">Monthly Revenue Chart — ${yr}</div>${barRows}</div>
+  <table>
+    <thead><tr><th>Month</th><th style="text-align:center;width:12%">Days</th><th style="text-align:center;width:12%">Items</th><th style="text-align:center;width:12%">Bills</th><th class="r" style="width:20%">Revenue</th></tr></thead>
+    <tbody>${tableRows}<tr class="total-row"><td>TOTAL ${yr}</td><td style="text-align:center">${totalDays}</td><td style="text-align:center">${totalItems}</td><td style="text-align:center">${totalBills}</td><td class="r" style="font-size:14px">Rs ${grand.toFixed(2)}</td></tr></tbody>
+  </table>
+  <div class="meta">Generated on ${new Date().toLocaleString()} &nbsp;|&nbsp; BCD Suppliers — PAN: ${PAN_NO}</div>
+  <script>window.onload=function(){window.print();window.close();}<\/script></body></html>`;
+  openPrint(html,950,800);
 }
 
-function reprintBill(bill) {
-    let printWindow = window.open('', '_blank', 'width=600,height=800');
-    let tableRows = bill.items.map((item, index) => 
-        `<tr><td>${index + 1}</td><td>${item.item}</td><td>${item.qty}</td><td>${item.price}</td><td>${item.total}</td></tr>`
-    ).join('');
+function printYearlyBillHistory(){
+  let yr=document.getElementById('yearFilter').value;
+  if(!yr){showToast('Enter a year first.',true);return;}
+  let allH=JSON.parse(localStorage.getItem('all_bill_history'))||[];
+  let bills=allH.filter(b=>b.date.startsWith(yr)).sort((a,b)=>new Date(a.date)-new Date(b.date)||a.billNo-b.billNo);
+  if(!bills.length){showToast('No bills for year '+yr,true);return;}
 
-    printWindow.document.write(`
-        <html>
-        <head>
-            <title>Bill No: ${bill.billNo}</title>
-            <style>
-                @page { size: A5; margin: 0; }
-                html, body { margin: 0; padding: 0; }
-                body { font-family: Arial; text-align: center; font-size: 11px; width: 148mm; height: 210mm; display: block; overflow: hidden; }
-                .bill-container { border: 1px solid black; padding: 8mm; margin: 5mm; height: 195mm; display: flex; flex-direction: column; box-sizing: border-box; }
-                .pan-row { display: flex; justify-content: space-between; font-weight: bold; font-size: 10px; margin-bottom: 2mm; }
-                .header-section { display: flex; align-items: center; justify-content: center; border-bottom: 1.2px solid black; padding-bottom: 3mm; margin-bottom: 3mm; }
-                .header-section img { height: 35px; margin-right: 8px; }
-                .company-info h2 { margin: 0; font-size: 16px; text-transform: uppercase; }
-                .contact-details { font-size: 9px; margin-top: 1px; color: #333; line-height: 1.2; }
-                .meta-info { display: flex; justify-content: space-between; font-size: 10px; margin-bottom: 3mm; font-weight: bold; border-bottom: 1px dashed #ccc; padding-bottom: 1mm; }
-                .customer-row { text-align: left; font-size: 10px; font-weight: bold; margin-bottom: 3mm; }
-                table { width: 100%; border-collapse: collapse; margin-top: 2mm; }
-                th, td { border: 0.8px solid black; padding: 4px; text-align: left; font-size: 10px; }
-                .total-section { margin-top: 5mm; text-align: right; font-size: 12px; font-weight: bold; border-top: 1px solid black; padding-top: 2mm; }
-                
-                .spacer { flex-grow: 1; min-height: 10mm; }
-                
-                .signature-section { display: flex; justify-content: space-between; margin-top: 10mm; padding: 0 5mm; }
-                .sig-box { border-top: 1px solid black; width: 110px; text-align: center; font-size: 9px; padding-top: 2px; font-weight: bold; }
-                .footer-web { font-size: 9px; font-weight: bold; margin-top: 5mm; text-align: center; }
-            </style>
-        </head>
-        <body>
-            <div class="bill-container">
-                <div class="pan-row"><span>PAN: ${PAN_NO}</span><span>Bill No: ${bill.billNo}</span></div>
-                <div class="header-section">
-                    <img src="${LOGO_URL}" onerror="this.style.display='none'">
-                    <div class="company-info">
-                        <h2>${COMPANY_NAME}</h2>
-                        <div class="contact-details">
-                            Kalimati-13, Kathmandu<br>
-                            Ph: ${PHONE_INFO} | Email: ${EMAIL_INFO}
-                        </div>
-                    </div>
-                </div>
-                <div class="meta-info"><span>Date: ${bill.date}</span><span>Time: ${bill.time}</span></div>
-                <div class="customer-row">Name: ${bill.customer}</div>
-                <table>
-                    <thead><tr><th style="width:10%">S.N.</th><th>Item</th><th style="width:10%">Qty</th><th style="width:15%">Price</th><th style="width:20%">Total</th></tr></thead>
-                    <tbody>${tableRows}</tbody>
-                </table>
-                <div class="total-section">Grand Total: Rs ${bill.grandTotal.toFixed(2)}</div>
-                
-                <div class="spacer"></div>
-                
-                <div class="signature-section">
-                    <div class="sig-box">Receiver's Signature</div>
-                    <div class="sig-box">Authorized Signature</div>
-                </div>
-                <div class="footer-web">${WEBSITE_URL}</div>
-            </div>
-            <script>window.onload = function() { setTimeout(function(){ window.print(); window.close(); }, 500); }<\/script>
-        </body>
-        </html>
-    `);
-    printWindow.document.close();
+  let grand=bills.reduce((s,b)=>s+b.grandTotal,0);
+  let rows=bills.map(b=>`<tr><td style="font-family:monospace">#${b.billNo}</td><td>${b.date}</td><td>${b.time}</td><td>${b.customer}</td><td class="r">Rs ${b.grandTotal.toFixed(2)}</td></tr>`).join('');
+
+  let html=`<!DOCTYPE html><html><head><title>Yearly Bill History — ${yr}</title><style>${REPORT_CSS}</style></head><body>
+  ${reportHeader('YEARLY BILL HISTORY')}
+  <div class="rpt-title">Year: <span>${yr}</span> &nbsp;|&nbsp; <span>${bills.length} Total Bills</span></div>
+  <table>
+    <thead><tr><th style="width:10%">Bill No</th><th style="width:13%">Date</th><th style="width:11%">Time</th><th>Customer</th><th class="r" style="width:18%">Amount</th></tr></thead>
+    <tbody>${rows}<tr class="total-row"><td colspan="4" style="text-align:right">YEARLY TOTAL</td><td class="r" style="font-size:14px">Rs ${grand.toFixed(2)}</td></tr></tbody>
+  </table>
+  <div class="meta">Generated on ${new Date().toLocaleString()} &nbsp;|&nbsp; BCD Suppliers — PAN: ${PAN_NO}</div>
+  <script>window.onload=function(){window.print();window.close();}<\/script></body></html>`;
+  openPrint(html,950,800);
 }
 
-/** UPDATED TABULAR MONTHLY BILL HISTORY **/
-function printMonthlyBillHistory() {
-    const selectedMonth = document.getElementById('monthFilter').value;
-    if (!selectedMonth) { alert("Please select a month!"); return; }
-
-    let allHistory = JSON.parse(localStorage.getItem("all_bill_history")) || [];
-    let filteredBills = allHistory.filter(bill => bill.date.startsWith(selectedMonth));
-
-    if (filteredBills.length === 0) { alert("No individual bill records found for " + selectedMonth); return; }
-
-    // Sort by date ascending
-    filteredBills.sort((a, b) => new Date(a.date) - new Date(b.date) || a.billNo - b.billNo);
-
-    let printWindow = window.open('', '_blank', 'width=1000,height=700');
-    let tableRows = filteredBills.map(bill => `
-        <tr>
-            <td>${bill.billNo}</td>
-            <td>${bill.date}</td>
-            <td>${bill.customer}</td>
-            <td style="text-align:right; font-weight:bold;">Rs ${bill.grandTotal.toFixed(2)}</td>
-        </tr>
-    `).join('');
-
-    let grandTotal = filteredBills.reduce((sum, bill) => sum + bill.grandTotal, 0);
-
-    printWindow.document.write(`
-        <html>
-        <head>
-            <title>Detailed Bill History - ${selectedMonth}</title>
-            <style>
-                body { font-family: Arial, sans-serif; padding: 30px; color: #333; }
-                .header { text-align: center; border-bottom: 2.5px solid #222; padding-bottom: 10px; margin-bottom: 20px; }
-                h1 { margin: 0; font-size: 26px; text-transform: uppercase; }
-                .sub-info { font-size: 14px; margin-top: 5px; font-weight: bold; }
-                table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-                th, td { border: 1px solid #999; padding: 12px; text-align: left; font-size: 13px; }
-                th { background-color: #f2f2f2; color: #000; font-weight: bold; text-transform: uppercase; }
-                tr:nth-child(even) { background-color: #fafafa; }
-                .footer { margin-top: 25px; text-align: right; font-size: 18px; font-weight: bold; border-top: 2px solid #222; padding-top:10px; }
-            </style>
-        </head>
-        <body>
-            <div class="header">
-                <h1>${COMPANY_NAME}</h1>
-                <div class="sub-info">DETAILED MONTHLY BILLING LOG: ${selectedMonth}</div>
-                <div style="font-size:12px; margin-top:4px;">PAN: ${PAN_NO} | ${WEBSITE_URL}</div>
-            </div>
-            <table>
-                <thead>
-                    <tr>
-                        <th style="width:10%;">Bill No</th>
-                        <th style="width:15%;">Bill Date</th>
-                        <th style="width:50%;">Customer Name & Address</th>
-                        <th style="width:25%; text-align:right;">Total Amount</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${tableRows}
-                </tbody>
-            </table>
-            <div class="footer">Monthly Revenue Total: Rs ${grandTotal.toFixed(2)}</div>
-            <p style="font-size:10px; color:#666; margin-top:40px;">Report Generated On: ${new Date().toLocaleString()}</p>
-            <script>window.onload = function() { window.print(); window.close(); }<\/script>
-        </body>
-        </html>
-    `);
-    printWindow.document.close();
+/* ═══════════════ THEME ═══════════════ */
+function toggleTheme(){
+  let light=document.documentElement.classList.toggle('light');
+  document.getElementById('themeIcon').textContent=light?'☀️':'🌙';
+  localStorage.setItem('bcd_theme',light?'light':'dark');
 }
+(function(){
+  if(localStorage.getItem('bcd_theme')==='light') document.documentElement.classList.add('light');
+})();
 
-function printMonthlyReport() {
-    const selectedMonth = document.getElementById('monthFilter').value;
-    if (!selectedMonth) { alert("Please select a month!"); return; }
+/* ═══════════════ KEYBOARD ═══════════════ */
+document.addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&document.activeElement.id!=='item') addItem();
+});
 
-    let monthlyData = [];
-    let grandTotal = 0;
-    
-    for (let i = 0; i < localStorage.length; i++) {
-        let key = localStorage.key(i);
-        if (key.startsWith(selectedMonth) && key.length === 10) {
-            let dayData = JSON.parse(localStorage.getItem(key)) || [];
-            let dayTotal = dayData.reduce((sum, item) => sum + item.total, 0);
-            if (dayData.length > 0) {
-                monthlyData.push({ date: key, total: dayTotal });
-                grandTotal += dayTotal;
-            }
-        }
-    }
-
-    monthlyData.sort((a, b) => new Date(a.date) - new Date(b.date));
-    if (monthlyData.length === 0) { alert("No data found for the selected month."); return; }
-
-    let printWindow = window.open('', '_blank', 'width=800,height=600');
-    let rows = monthlyData.map(d => `<tr><td>${d.date}</td><td style="text-align:right;">Rs ${d.total.toFixed(2)}</td></tr>`).join('');
-
-    printWindow.document.write(`
-        <html><head><title>Monthly Report</title><style>body{font-family:Arial;text-align:center;padding:20px;}table{width:100%;border-collapse:collapse;}th,td{border:1px solid #000;padding:8px;}</style></head>
-        <body><h1>${COMPANY_NAME}</h1><h2>Monthly Sales Report: ${selectedMonth}</h2><table><thead><tr><th>Date</th><th>Total Sales</th></tr></thead><tbody>${rows}</tbody></table><h3>Grand Total: Rs ${grandTotal.toFixed(2)}</h3>
-        <script>window.onload=function(){window.print();window.close();}<\/script></body></html>
-    `);
-    printWindow.document.close();
-}
-
-function deleteItem(index){ if(confirm("Delete?")){ let k=formatDate(currentDate); let d=JSON.parse(localStorage.getItem(k)); d.splice(index,1); saveData(d); loadData(); } }
-function prepareAndPrintFull() { window.print(); }
-function resetBillCounter() { if(confirm("Reset?")){ localStorage.setItem("lastBillNumber", 0); alert("Reset!"); } }
-function closeDay(){ localStorage.setItem(formatDate(currentDate)+"_status", "closed"); loadData(); }
-function openDay(){ localStorage.setItem(formatDate(currentDate)+"_status", "open"); loadData(); }
-function prevDay(){ currentDate.setDate(currentDate.getDate() - 1); loadData(); }
-function nextDay(){ currentDate.setDate(currentDate.getDate() + 1); loadData(); }
+/* ═══════════════ INIT ═══════════════ */
 loadData();
+document.getElementById('themeIcon').textContent=localStorage.getItem('bcd_theme')==='light'?'☀️':'🌙';
+document.getElementById('yearFilter').value=new Date().getFullYear();
 </script>
 </body>
 </html>
